@@ -9,6 +9,8 @@
 #define TILE_COUNT_W 16
 #define TILE_SIZE 60
 
+#define MAX_MINE 30
+
 typedef enum tile_secret {
    EMPTY,
    MINE,

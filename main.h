@@ -10,7 +10,7 @@
 // bitwise externals
 
 extern
-bool bitwise_check_bits_at(uint8_t bits, uint8_t bitmask);
+bool bitwise_check_bits_at(uint8_t *bits, uint8_t bitmask);
 
 // engine externals
 extern SDL_Window *Window;
@@ -29,6 +29,7 @@ extern uint8_t bit_board[TILE_COUNT_W][TILE_COUNT_H];
 extern bool Continue;
 
 extern void game_place_mines(void);
+extern void game_place_hints (void);
 extern void game_hide_tiles (void);
 
 // util external

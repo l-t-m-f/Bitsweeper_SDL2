@@ -4,6 +4,7 @@
 
 #include "../include/util.h"
 
-uint8_t EXP(int e){
-return (uint8_t) (1 << e);
+uint8_t EXP (int e)
+{
+  return (uint8_t) (1 << e);
 }

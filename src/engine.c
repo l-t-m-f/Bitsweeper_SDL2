@@ -94,7 +94,8 @@ void engine_render_loop (void)
   SDL_SetRenderDrawColor (Renderer, Background.r, Background.g, Background.b, Background.a);
   game_make_board_layout ();
   blit (final_textures.GameBoard, 0, 0, 0);
-  blit (final_textures.TileSelector, (Mouse.x/TILE_SIZE) * TILE_SIZE, (Mouse.y/TILE_SIZE) * TILE_SIZE, 0);
+  blit (final_textures.TileSelector,
+        (Mouse.x / TILE_SIZE) * TILE_SIZE, (Mouse.y / TILE_SIZE) * TILE_SIZE, 0);
   blit (final_textures.Cursor, Mouse.x, Mouse.y, 0);
   SDL_RenderPresent (Renderer);
   SDL_DestroyTexture (final_textures.GameBoard);
@@ -131,7 +132,7 @@ static void handle_events (SDL_Event event)
         }
       case SDL_MOUSEBUTTONDOWN:
         {
-          game_process_mouse_click(&event.button);
+          game_process_mouse_click (&event.button);
           break;
         }
       default:
