@@ -17,7 +17,7 @@ texture_manager final_textures = {
 
 SDL_Event event_ptr;
 
-SDL_Color Background = {.r = 25, .g = 155, .b = 0, .a = 255};
+SDL_Color Background = {.r = 25, .g = 25, .b = 0, .a = 255};
 
 mouse Mouse;
 
@@ -30,9 +30,12 @@ SDL_Surface *engine_extract_tile (uint32_t atlas_key, SDL_Point tile_coordinates
 void engine_load_images (void);
 SDL_Surface *engine_create_portable_surface (uint8_t width, uint8_t height);
 
+SDL_Texture *engine_make_text_texture (char *text);
+
 static void handle_events (SDL_Event event);
 static bool handle_sys_events (SDL_Event event);
 static void blit (SDL_Texture *texture, int x, int y, int center);
+static SDL_Texture *surface_to_texture (SDL_Surface *surface, int destroy_surface);
 
 void engine_init (void)
 {
@@ -51,8 +54,8 @@ void engine_init (void)
   Window = SDL_CreateWindow ("Bitsweeper",
                              SDL_WINDOWPOS_UNDEFINED,
                              SDL_WINDOWPOS_UNDEFINED,
-                             TILE_SIZE * TILE_COUNT_W,
-                             TILE_SIZE * TILE_COUNT_H, window_flags);
+                             WINDOW_W,
+                             WINDOW_H, window_flags);
   if (Window == NULL)
     {
       SDL_Log ("Something went wrong creating the window! (%s)\n", SDL_GetError ());
@@ -93,10 +96,11 @@ void engine_render_loop (void)
   SDL_RenderClear (Renderer);
   SDL_SetRenderDrawColor (Renderer, Background.r, Background.g, Background.b, Background.a);
   game_make_board_layout ();
-  blit (final_textures.GameBoard, 0, 0, 0);
+  blit (final_textures.GameBoard, 0, HEADER_H, 0);
   blit (final_textures.TileSelector,
         (Mouse.x / TILE_SIZE) * TILE_SIZE, (Mouse.y / TILE_SIZE) * TILE_SIZE, 0);
   blit (final_textures.Cursor, Mouse.x, Mouse.y, 0);
+  blit(FontManager.FontTextures[0], 0, 0, 0);
   SDL_RenderPresent (Renderer);
   SDL_DestroyTexture (final_textures.GameBoard);
 }
@@ -244,4 +248,22 @@ static void blit (SDL_Texture *texture, int x, int y, int center)
     }
 
   SDL_RenderCopy (Renderer, texture, NULL, &dest);
+}
+
+SDL_Texture *engine_make_text_texture (char *text)
+{
+  SDL_Surface *surface;
+  surface = TTF_RenderUTF8_Blended (FontManager.Fonts[0], text, WHITE);
+  return surface_to_texture(surface, 1);
+}
+
+static SDL_Texture *surface_to_texture (SDL_Surface *surface, int destroy_surface)
+{
+  SDL_Texture *texture;
+  texture = SDL_CreateTextureFromSurface (Renderer, surface);
+
+  if(destroy_surface) {
+      SDL_FreeSurface (surface);
+    }
+  return texture;
 }

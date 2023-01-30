@@ -32,8 +32,14 @@ extern void game_place_mines(void);
 extern void game_place_hints (void);
 extern void game_hide_tiles (void);
 
+// interface externals
+
+extern void interface_init(void);
+
 // util external
 
 extern uint8_t EXP(int e);
+
+
 
 #endif //MAIN_H

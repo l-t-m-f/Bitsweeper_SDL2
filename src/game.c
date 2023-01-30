@@ -25,7 +25,7 @@ static void add_tile_to_board_layout (int x, int y, SDL_Surface *board_surface_r
 static void reveal (SDL_Point start_coordinates);
 static uint8_t check_adjacent_for_hint (int x, int y);
 static void set_tile_hint (uint8_t *tile_ptr, uint8_t neighbor_count);
-static SDL_Point get_hint_surface_coordinates (int x, int y);
+static SDL_Point get_hint_matching_surface_coordinates (int x, int y);
 
 void game_place_mines (void)
 {
@@ -184,7 +184,7 @@ static void add_tile_to_board_layout (int x, int y, SDL_Surface *board_surface_r
               // Check if the tile has a hint (it would have bit 0x10 active)
               if (bitwise_check_bits_at (&bit_board[x][y], 0x10) == true)
                 {
-                  temp = engine_extract_tile (0, get_hint_surface_coordinates (x, y));
+                  temp = engine_extract_tile (0, get_hint_matching_surface_coordinates (x, y));
                 }
               else
                 {
@@ -227,7 +227,7 @@ static void add_tile_to_board_layout (int x, int y, SDL_Surface *board_surface_r
 
 }
 
-static SDL_Point get_hint_surface_coordinates (int x, int y)
+static SDL_Point get_hint_matching_surface_coordinates (int x, int y)
 {
   if (bitwise_check_bits_at (&bit_board[x][y], 0x20) == true)
     {
@@ -350,33 +350,3 @@ static void reveal (SDL_Point start_coordinates)
         }
     }
 }
-
-//if (start_coordinates.x < 0 || start_coordinates.x > TILE_COUNT_W - 1 ||
-//start_coordinates.y < 0 || start_coordinates.y > TILE_COUNT_H - 1)
-//{
-//return;
-//}
-//
-//uint8_t *bits = &bit_board[start_coordinates.x][start_coordinates.y];
-//
-//// Tile is already revealed (bit 0x2 is 1)
-//if (bitwise_check_bits_at (bits, 0x2) == true) return;
-//
-//// Tile is a hint (bit 0x10 is 1)
-//if (bitwise_check_bits_at (bits, 0x10) == true)
-//{
-//bitwise_plop_bit_at (bits, 0x2);
-//return;
-//}
-//
-//if (bitwise_check_bits_at (bits, 0x1) == true)
-//{
-////bitwise_plop_bit_at (bits, 0x2);
-////gameover
-//return;
-//}
-//
-//reveal ((SDL_Point) {start_coordinates.x, start_coordinates.y - 1});
-//reveal ((SDL_Point) {start_coordinates.x, start_coordinates.y + 1});
-//reveal ((SDL_Point) {start_coordinates.x - 1, start_coordinates.y});
-//reveal ((SDL_Point) {start_coordinates.x + 1, start_coordinates.y});

@@ -4,6 +4,8 @@ int main (int argc, char **argv)
 {
   engine_init ();
 
+  interface_init();
+
   game_place_mines ();
 
   game_place_hints ();
