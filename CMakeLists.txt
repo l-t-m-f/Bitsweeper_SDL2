@@ -10,6 +10,7 @@ set(CMAKE_C_FLAGS "-Wall -Wextra -Wfloat-equal -Wundef -Wshadow -Wpointer-arith 
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/gfx DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/fonts DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/dat DESTINATION ${CMAKE_BINARY_DIR})
 
 add_executable(Bitsweeper ${SOURCES} include/common.h)
 target_link_libraries(${PROJECT_NAME} -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer)

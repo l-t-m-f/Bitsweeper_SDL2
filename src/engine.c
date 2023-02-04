@@ -9,17 +9,11 @@ SDL_Renderer *Renderer = NULL;
 
 SDL_Surface *SurfaceArrayObject[] = {};
 
-texture_manager final_textures = {
-    .GameBoard = NULL,
-    .Cursor = NULL,
-    .TileSelector = NULL
-};
-
 SDL_Event event_ptr;
 
 SDL_Color Background = {.r = 25, .g = 25, .b = 0, .a = 255};
 
-mouse Mouse;
+app App;
 
 void engine_init (void);
 void engine_render_loop (void);
@@ -30,8 +24,9 @@ SDL_Surface *engine_extract_tile (uint32_t atlas_key, SDL_Point tile_coordinates
 void engine_load_images (void);
 SDL_Surface *engine_create_portable_surface (uint8_t width, uint8_t height);
 
-SDL_Texture *engine_make_text_texture (char *text);
+SDL_Texture *engine_make_text_texture (char *text, SDL_Color *color);
 
+static void engine_render_buttons (void);
 static void handle_events (SDL_Event event);
 static bool handle_sys_events (SDL_Event event);
 static void blit (SDL_Texture *texture, int x, int y, int center);
@@ -89,6 +84,8 @@ void engine_init (void)
   engine_regenerate_seed ();
 
   SDL_ShowCursor (0);
+
+  engine_load_images ();
 }
 
 void engine_render_loop (void)
@@ -96,13 +93,32 @@ void engine_render_loop (void)
   SDL_RenderClear (Renderer);
   SDL_SetRenderDrawColor (Renderer, Background.r, Background.g, Background.b, Background.a);
   game_make_board_layout ();
-  blit (final_textures.GameBoard, 0, HEADER_H, 0);
-  blit (final_textures.TileSelector,
-        (Mouse.x / TILE_SIZE) * TILE_SIZE, (Mouse.y / TILE_SIZE) * TILE_SIZE, 0);
-  blit (final_textures.Cursor, Mouse.x, Mouse.y, 0);
-  blit(FontManager.FontTextures[0], 0, 0, 0);
+  blit (App.TextureManager.Textures[BOARD], 0, HEADER_PIXEL_HEIGHT, 0);
+  blit (App.TextureManager.Textures[TILE_SELECTOR],
+        (App.Mouse.x / TILE_PIXEL_SIZE) * TILE_PIXEL_SIZE,
+        (App.Mouse.y / TILE_PIXEL_SIZE) * TILE_PIXEL_SIZE, 0);
+  blit (App.FontManager.FontTextures[0][RGBA_YELLOW], 0, 0, 0);
+  if (GameOver)
+    {
+      blit (App.FontManager.FontTextures[3][RGBA_RED], WINDOW_W / 2, 450, 1);
+    }
+  //engine_render_buttons ();
+  blit (App.TextureManager.Textures[MOUSE_CURSOR], App.Mouse.x, App.Mouse.y, 0);
   SDL_RenderPresent (Renderer);
-  SDL_DestroyTexture (final_textures.GameBoard);
+  SDL_DestroyTexture (App.TextureManager.Textures[0]);
+}
+
+static void engine_render_buttons (void)
+{
+  for (int i = 0; i < BUTTON_MAX; i++)
+    {
+      if (&App.Buttons[i] != NULL
+          && App.Buttons[i].is_drawn == true)
+        {
+          SDL_SetRenderDrawColor (Renderer, 255, 125, 0, 255);
+          SDL_RenderFillRect (Renderer, &App.Buttons[i].rectangle);
+        }
+    }
 }
 
 bool engine_check_for_event (void)
@@ -116,9 +132,10 @@ bool engine_check_for_event (void)
 void engine_regenerate_seed ()
 {
   bool DEBUG = false;
-  SDL_GetMouseState (&Mouse.x, &Mouse.y);
-  srand ((unsigned int) (Mouse.x ^ Mouse.y));
-  if (DEBUG) printf ("New rand seed is: %u \n", (unsigned int) (Mouse.x | Mouse.y));
+  SDL_GetMouseState (&App.Mouse.x, &App.Mouse.y);
+  srand ((unsigned int) (App.Mouse.x ^ App.Mouse.y));
+  if (DEBUG)
+    printf ("New rand seed is: %u \n", (unsigned int) (App.Mouse.x | App.Mouse.y));
 }
 
 static void handle_events (SDL_Event event)
@@ -198,10 +215,10 @@ void engine_load_images (void)
       SDL_Log ("Loaded successfully: %s\n", "gfx/Tiles.png");
     }
 
-  final_textures.Cursor = SDL_CreateTextureFromSurface (
+  App.TextureManager.Textures[MOUSE_CURSOR] = SDL_CreateTextureFromSurface (
       Renderer, engine_extract_tile (0, (SDL_Point) {.x = 1, .y = 1}));
 
-  final_textures.TileSelector = SDL_CreateTextureFromSurface (
+  App.TextureManager.Textures[TILE_SELECTOR] = SDL_CreateTextureFromSurface (
       Renderer, engine_extract_tile (0, (SDL_Point) {.x = 0, .y = 1}));
 
 //   if ((SDL_SetColorKey(SurfaceArrayObject[0], SDL_TRUE, 0)) < 0)
@@ -214,7 +231,8 @@ void engine_load_images (void)
 SDL_Surface *engine_extract_tile (uint32_t atlas_key, SDL_Point tile_coordinates)
 {
   SDL_Rect sourceTarget = {.h = 60, .w = 60,
-      .x = (tile_coordinates.x * TILE_SIZE), .y = (tile_coordinates.y * TILE_SIZE)};
+      .x = (tile_coordinates.x * TILE_PIXEL_SIZE), .y = (tile_coordinates.y
+                                                         * TILE_PIXEL_SIZE)};
   SDL_Surface *tile_surface = engine_create_portable_surface (1, 1);
   SDL_BlitSurface (SurfaceArrayObject[atlas_key], &sourceTarget, tile_surface, NULL);
   return tile_surface;
@@ -224,11 +242,11 @@ SDL_Surface *engine_create_portable_surface (uint8_t width, uint8_t height)
 {
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
   return SDL_CreateRGBSurface(
-      0, (TILE_SIZE * width), (TILE_SIZE * height),
+      0, (TILE_PIXEL_SIZE * width), (TILE_PIXEL_SIZE * height),
       32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
 #else
   return SDL_CreateRGBSurface (
-      0, (TILE_SIZE * width), (TILE_SIZE * height),
+      0, (TILE_PIXEL_SIZE * width), (TILE_PIXEL_SIZE * height),
       32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
 #endif
 }
@@ -250,11 +268,11 @@ static void blit (SDL_Texture *texture, int x, int y, int center)
   SDL_RenderCopy (Renderer, texture, NULL, &dest);
 }
 
-SDL_Texture *engine_make_text_texture (char *text)
+SDL_Texture *engine_make_text_texture (char *text, SDL_Color *color)
 {
   SDL_Surface *surface;
-  surface = TTF_RenderUTF8_Blended (FontManager.Fonts[0], text, WHITE);
-  return surface_to_texture(surface, 1);
+  surface = TTF_RenderUTF8_Blended (App.FontManager.Fonts[0], text, *color);
+  return surface_to_texture (surface, 1);
 }
 
 static SDL_Texture *surface_to_texture (SDL_Surface *surface, int destroy_surface)
@@ -262,7 +280,8 @@ static SDL_Texture *surface_to_texture (SDL_Surface *surface, int destroy_surfac
   SDL_Texture *texture;
   texture = SDL_CreateTextureFromSurface (Renderer, surface);
 
-  if(destroy_surface) {
+  if (destroy_surface)
+    {
       SDL_FreeSurface (surface);
     }
   return texture;

@@ -9,7 +9,11 @@ uint8_t bit_board[TILE_COUNT_W][TILE_COUNT_H] = {
         [0 ... TILE_COUNT_H - 1] = 0x00
     }
 };
+
+bool Began = false;
 bool Continue = true;
+bool GameOver = false;
+bool GameWon = false;
 
 static uint8_t mine_count = 0;
 
@@ -19,7 +23,7 @@ void game_hide_tiles (void);
 tile_secret_type game_get_tile_secret__bit1 (uint8_t *tile);
 tile_status_type game_get_tile_reveal__bit2 (uint8_t *tile);
 void game_make_board_layout (void);
-void game_process_mouse_click (SDL_MouseButtonEvent *button);
+void game_process_mouse_click (SDL_MouseButtonEvent *mouse_button);
 
 static void add_tile_to_board_layout (int x, int y, SDL_Surface *board_surface_ref);
 static void reveal (SDL_Point start_coordinates);
@@ -29,7 +33,8 @@ static SDL_Point get_hint_matching_surface_coordinates (int x, int y);
 
 void game_place_mines (void)
 {
-
+  memset (bit_board, 0, TILE_COUNT_W * TILE_COUNT_H * sizeof (uint8_t));
+  mine_count = 0;
   while (mine_count < MAX_MINE)
     {
       //engine_regenerate_seed ();
@@ -162,7 +167,7 @@ void game_make_board_layout (void)
           add_tile_to_board_layout (j, i, board_surface);
         }
     }
-  final_textures.GameBoard = SDL_CreateTextureFromSurface (Renderer, board_surface);
+  App.TextureManager.Textures[BOARD] = SDL_CreateTextureFromSurface (Renderer, board_surface);
   SDL_FreeSurface (board_surface);
 }
 
@@ -176,7 +181,7 @@ static void add_tile_to_board_layout (int x, int y, SDL_Surface *board_surface_r
         {
           SDL_Rect dest_target = {
               .h = 60, .w = 60,
-              .x = TILE_SIZE * x, .y = TILE_SIZE * y};
+              .x = TILE_PIXEL_SIZE * x, .y = TILE_PIXEL_SIZE * y};
           SDL_Surface *temp = NULL;
           if (game_get_tile_reveal__bit2 (&bit_board[x][y]) == REVEALED)
             {
@@ -203,7 +208,7 @@ static void add_tile_to_board_layout (int x, int y, SDL_Surface *board_surface_r
         {
           SDL_Rect dest_target = {
               .h = 60, .w = 60,
-              .x = TILE_SIZE * x, .y = TILE_SIZE * y};
+              .x = TILE_PIXEL_SIZE * x, .y = TILE_PIXEL_SIZE * y};
           SDL_Surface *temp = NULL;
           if (game_get_tile_reveal__bit2 (&bit_board[x][y]) == REVEALED)
             {
@@ -295,23 +300,48 @@ tile_status_type game_get_tile_reveal__bit2 (uint8_t *tile)
     }
 }
 
-void game_process_mouse_click (SDL_MouseButtonEvent *button)
+void game_process_mouse_click (SDL_MouseButtonEvent *mouse_button)
 {
-  if (button->button == SDL_BUTTON_LEFT)
+  if (mouse_button->button == SDL_BUTTON_LEFT)
     {
       SDL_Log ("Mouse has been clicked (left)!\n");
-      int tile_x = Mouse.x / TILE_SIZE;
-      int tile_y = Mouse.y / TILE_SIZE;
 
-      reveal ((SDL_Point) {.x = tile_x, .y = tile_y});
+      int tile_x = App.Mouse.x / TILE_PIXEL_SIZE;
+      int tile_y = App.Mouse.y / TILE_PIXEL_SIZE;
+
+      if (!Began)
+        {
+          do
+            {
+              game_place_mines ();
+              game_place_hints ();
+              SDL_Log ("Checking %d, %d\n", tile_x, tile_y - 1);
+            }
+          while (bitwise_check_bits_at (&bit_board[tile_x][tile_y - 1], HINT_BOOL_BIT)
+                 == true
+                 || bitwise_check_bits_at (&bit_board[tile_x][tile_y - 1], BOMB_BIT)
+                    == true);
+        }
+
+      reveal ((SDL_Point) {.x = tile_x, .y = tile_y - 1});
+
+      if (bitwise_check_bits_at (&bit_board[tile_x][tile_y - 1], BOMB_BIT) == true)
+        {
+          GameOver = true;
+        }
+
+      if (tile_y > 0) Began = true;
     }
 
-  else if (button->button == SDL_BUTTON_RIGHT)
+  else if (mouse_button->button == SDL_BUTTON_RIGHT)
     {
       SDL_Log ("Mouse has been clicked (right)!\n");
-      int tile_x = Mouse.x / TILE_SIZE;
-      int tile_y = Mouse.y / TILE_SIZE;
-      bitwise_clear_bit_at (&bit_board[tile_x][tile_y], 0x0002);
+      if (Began)
+        {
+          int tile_x = App.Mouse.x / TILE_PIXEL_SIZE;
+          int tile_y = App.Mouse.y / TILE_PIXEL_SIZE;
+          bitwise_clear_bit_at (&bit_board[tile_x][tile_y], 0x0002);
+        }
     }
 }
 

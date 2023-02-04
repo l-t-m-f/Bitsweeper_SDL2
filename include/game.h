@@ -16,13 +16,11 @@ extern void bitwise_clear_bit_at(uint8_t *bits, uint8_t bitmask);
 
 // engine externals
 extern SDL_Renderer *Renderer;
-extern texture_manager final_textures;
-extern mouse Mouse;
+extern app App;
 
 extern SDL_Surface *engine_create_portable_surface (uint8_t width, uint8_t height);
 extern SDL_Surface *engine_extract_tile (uint32_t atlas_key, SDL_Point tile_coordinates);
 extern void engine_regenerate_seed ();
-
 
 // util externals
 extern uint8_t EXP(int e);

@@ -4,58 +4,127 @@
 
 #include "../include/interface.h"
 
-font_manager FontManager;
-
 char ***GameStringPool = NULL;
 
-struct header {
-   SDL_Rect rectangle;
-   uint8_t mine_count;
-   char message_to_player[80];
-};
-
 header *Header = NULL;
+
+SDL_Color ColorPalette[COLOR_MAX] = {
+    (SDL_Color) {.r = 255, .g = 255, .b = 255, .a = 255},
+    (SDL_Color) {.r = 255, .g = 0, .b = 0, .a = 255},
+    (SDL_Color) {.r = 0, .g = 255, .b = 0, .a = 255},
+    (SDL_Color) {.r = 0, .g = 0, .b = 255, .a = 255},
+    (SDL_Color) {.r = 255, .g = 255, .b = 0, .a = 255},
+    (SDL_Color) {.r = 0, .g = 255, .b = 255, .a = 255},
+    (SDL_Color) {.r = 255, .g = 0, .b = 255, .a = 255},
+};
 
 void interface_init (void);
 
 static void load_fonts (void);
+static void allocate_and_load_string_pools (void);
+static char *load_data (void);
 
 void interface_init (void)
 {
-  load_fonts();
+  load_fonts ();
   Header = malloc (sizeof (header));
-  Header->rectangle = (SDL_Rect) {.x = 0, .y = 0, .w = WINDOW_W, .h = HEADER_H};
+  Header->rectangle = (SDL_Rect) {.x = 0, .y = 0, .w = WINDOW_W, .h = HEADER_PIXEL_HEIGHT};
   Header->mine_count = MAX_MINE;
-  char *pointer_to_message = &Header->message_to_player[0];
-  pointer_to_message = (char *) "Welcome to minesweeper...";
 
-  // Allocate for the GameStringPool
-  GameStringPool = calloc (GAME_STRING_POOL_WIDTH, sizeof (char **));
-  for (int i = 0; i < GAME_STRING_POOL_WIDTH; i++)
-    {
-      GameStringPool[i] = calloc (GAME_STRING_POOL_HEIGHT, sizeof (char *));
-      for (int j = 0; j < GAME_STRING_POOL_HEIGHT; j++)
-        {
-          GameStringPool[i][j] = calloc(GAME_STRING_POOL_MAX_LENGTH, sizeof(char));
-        }
-    }
+  allocate_and_load_string_pools ();
 
-  strcpy_s (GameStringPool[0][0], GAME_STRING_POOL_MAX_LENGTH, pointer_to_message);
-  printf("%s\n", GameStringPool[0][0]);
-
-  FontManager.FontTextures = calloc(FONT_MAX, sizeof(SDL_Texture *));
-  FontManager.FontTextures[0] = engine_make_text_texture (GameStringPool[0][0]);
-  if(FontManager.FontTextures[0] == NULL) {
-    SDL_Log("Error - Font Texture NULL pointer\n");
-  }
-
+  App.Buttons[0] = (button) {
+      .rectangle = (SDL_Rect) {
+          .x = WINDOW_W / 2, .y = 400,
+          . w = 200, .h = 50,},
+      .button_state = ALONE,
+      .is_drawn = true
+  };
 }
 
 static void load_fonts (void)
 {
-  FontManager.Fonts = calloc(FONT_MAX, sizeof(TTF_Font *));
-  FontManager.Fonts[0] = TTF_OpenFont ("fonts/honey_bear.ttf", FONT_SIZE);
-  if(FontManager.Fonts[0] == NULL) {
-      SDL_Log("Error - Font NULL pointer\n");
+  App.FontManager.Fonts[0] = TTF_OpenFont ("fonts/Daydream.ttf", FONT_SIZE);
+  if (App.FontManager.Fonts[0] == NULL)
+    {
+      SDL_Log ("Error - Font NULL pointer\n");
+    }
+}
+
+static void allocate_and_load_string_pools (void)
+{
+
+  GameStringPool = calloc (GAME_STRING_POOL_SIZE, sizeof (char **));
+  for (int i = 0; i < COLOR_MAX; i++)
+    {
+      GameStringPool[i] = calloc (COLOR_MAX, sizeof (char *));
+    }
+  char *string_data = load_data ();
+  size_t total = strlen (string_data);
+
+  size_t start = 0;
+  size_t end = 0;
+  uint8_t word = 0;
+
+  char *c = string_data;
+
+  while (c <= string_data + total)
+    {
+      if (*c == '\n' || c == string_data + total)
+        {
+          for (int i = 0; i < COLOR_MAX; i++)
+            {
+              // Allocate a new element in the string pool of size end plus the nul terminator
+              GameStringPool[word][i] = calloc (end + 1, sizeof (char));
+              strncpy (GameStringPool[word][i], string_data + start, end);
+              GameStringPool[word][i][end] = '\0'; // adding the terminator
+
+              //printf ("The next word %s is %lld letter(s)\n", GameStringPool[word][i], end);
+
+              App.FontManager.FontTextures[word][i] = engine_make_text_texture (
+                  GameStringPool[word][i], &ColorPalette[i]);
+              if (App.FontManager.FontTextures[word][i] == NULL)
+                {
+                  SDL_Log ("Error - Font Texture NULL pointer\n");
+                }
+            }
+          start += end;
+
+          // Skip the \n
+          start += 2;
+
+          end = 0;
+          word++;
+        }
+      else if (*c != '\r')
+        {
+          end++;
+        }
+      c++;
+    }
+}
+
+static char *load_data (void)
+{
+  char *buffer = NULL;
+  uint64_t length;
+  FILE *f = fopen ("dat/strings.txt", "rb");
+
+  if (f != NULL)
+    {
+      fseek (f, 0, SEEK_END);
+      length = (uint64_t) ftell (f);
+      fseek (f, 0, SEEK_SET);
+      buffer = malloc (length);
+
+      if (buffer != NULL)
+        {
+          fread (buffer, 1, length, f);
+        }
+      fclose (f);
+    }
+  if (buffer != NULL)
+    {
+      return buffer;
     }
 }

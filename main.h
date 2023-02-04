@@ -26,6 +26,8 @@ extern void engine_load_images(void);
 
 // game externals
 extern uint8_t bit_board[TILE_COUNT_W][TILE_COUNT_H];
+
+extern bool Began;
 extern bool Continue;
 
 extern void game_place_mines(void);

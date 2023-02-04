@@ -8,7 +8,9 @@
 #include "common.h"
 
 // engine externals
+extern app App;
 
-extern SDL_Texture *engine_make_text_texture (char *text);
+
+extern SDL_Texture *engine_make_text_texture (char *text, SDL_Color *color);
 
 #endif //INTERFACE_H
