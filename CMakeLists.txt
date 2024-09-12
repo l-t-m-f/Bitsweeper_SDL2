@@ -17,16 +17,6 @@ set(CUSTOM_OPTIMIZATION_FLAGS_SUPPLEMENT "-march=native -funroll-loops -finline-
 set(CUSTOM_EXPERIMENTAL_FLAGS "-O3 -Ofast -ffast-math")
 set(CUSTOM_LIBRARY_FLAGS "-fopenmp")
 
-# Packages
-# # OpenMP
-find_package(OpenMP 4.5 REQUIRED)
-
-if (OpenMP_FOUND)
-    message("-- OpenMP v4.5 found!")
-else ()
-    message(FATAL_ERROR "-- OpenMP v4.5 not found")
-endif ()
-
 # # SDL2 and friends
 find_package(SDL2 2.28.1 REQUIRED)
 if (SDL2_FOUND)
@@ -91,7 +81,14 @@ elseif (OPTIMIZATION_LEVEL EQUAL 4)
             CACHE STRING "C Flags" FORCE)
 endif ()
 
-add_executable(${PROJECT_NAME} src/main.c src/game.c src/engine.c src/interface.c src/util.c src/bitwise.c)
+add_executable(${PROJECT_NAME}
+        src/main.c
+        src/game.c
+        src/engine.c
+        src/interface.c
+        src/util.c
+        src/bitwise.c
+)
 
 set(INCLUDE "src" "src/global")
 include_directories(${INCLUDE})
@@ -107,7 +104,7 @@ endif ()
 
 set_target_properties(${PROJECT_NAME}
         PROPERTIES
-        C_STANDARD 23
+        C_STANDARD 99
         C_STANDARD_REQUIRED YES
         C_EXTENSIONS NO
 )
