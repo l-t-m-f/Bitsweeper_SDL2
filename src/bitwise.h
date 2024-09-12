@@ -5,7 +5,7 @@
 #ifndef BITWISE_H
 #define BITWISE_H
 
-#include "common.h"
+#include "global/common.h"
 
 enum bitmask;
 

@@ -5,7 +5,7 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include "common.h"
+#include "global/common.h"
 
 // engine externals
 extern App app;

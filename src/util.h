@@ -5,6 +5,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "common.h"
+#include "global/common.h"
 
 #endif //UTIL_H

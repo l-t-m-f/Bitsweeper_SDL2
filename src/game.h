@@ -5,7 +5,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "common.h"
+#include "global/common.h"
 
 uint8_t bit_board[TILE_COUNT_W][TILE_COUNT_H];
 

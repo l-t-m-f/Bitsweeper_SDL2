@@ -13,5 +13,9 @@ main (int argc, char **argv)
       engine_check_for_event ();
       engine_render_loop ();
     }
+    for(int i = 0; i < argc; i++)
+    {
+      SDL_Log("%s\n", argv[i]);
+    }
   return 0;
 }

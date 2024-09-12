@@ -5,7 +5,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "common.h"
+#include "global/common.h"
 
 //game externals
 extern
