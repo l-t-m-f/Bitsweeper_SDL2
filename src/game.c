@@ -365,6 +365,12 @@ game_get_tile_reveal__bit2 (uint8_t *tile)
 void
 game_process_mouse_click (SDL_MouseButtonEvent *mouse_button)
 {
+  if(game_over)
+  {
+    return;
+  }
+
+
   if (mouse_button->button == SDL_BUTTON_LEFT)
     {
       SDL_Log ("mouse has been clicked (left)!\n");
@@ -391,6 +397,7 @@ game_process_mouse_click (SDL_MouseButtonEvent *mouse_button)
       if (bitwise_check_bits_at (&bit_board[tile_x][tile_y - 1], BOMB_BIT) == true)
         {
           game_over = true;
+
         }
 
       if (tile_y > 0) began = true;

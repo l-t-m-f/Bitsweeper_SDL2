@@ -2,3 +2,4 @@ BITSWEEPER
 Welcome to Bitsweeper!
 Mines
 GAME OVER
+Mine again!

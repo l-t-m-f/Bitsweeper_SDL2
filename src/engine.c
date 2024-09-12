@@ -14,7 +14,7 @@ SDL_Surface *surface_array_object[] = {0};
 MSErrorType engine_init(void);
 void engine_render_loop(void);
 void engine_request_exit(void);
-void engine_regenerate_seed();
+void engine_regenerate_seed(void);
 SDL_Surface *engine_extract_tile(uint32_t atlas_key,
                                  SDL_Point tile_coordinates);
 void engine_load_images(void);
@@ -87,6 +87,7 @@ MSErrorType engine_init(void) {
 }
 
 void engine_render_loop(void) {
+  SDL_SetRenderDrawColor(main_renderer, 0, 0, 0, 255);
   SDL_RenderClear(main_renderer);
   SDL_SetRenderDrawColor(main_renderer, main_palette->colors[11].r,
                          main_palette->colors[11].g, main_palette->colors[11].b,
@@ -99,9 +100,12 @@ void engine_render_loop(void) {
   blit(app.font_manager.font_textures[0][YELLOW], 0, 0, 0);
   if (game_over) {
     blit(app.font_manager.font_textures[3][RED], WINDOW_W / 2, 450, 1);
+    render_buttons();
+    blit(app.font_manager.font_textures[4][RED], WINDOW_W / 2, 705, 1);
   }
   // render_buttons ();
   blit(app.texture_manager.textures[MOUSE_CURSOR], app.mouse.x, app.mouse.y, 0);
+
   SDL_RenderPresent(main_renderer);
   SDL_DestroyTexture(app.texture_manager.textures[0]);
 }
@@ -212,9 +216,7 @@ static void handle_events(SDL_Event event) {
 
   switch (event.type) {
   case SDL_MOUSEMOTION: {
-    // printf("We got a motion event. (%u)\n", event.type);
-    // printf("Current Mouse position is: (%d, %d)\n", event.motion.x,
-    // event.motion.y, (event.motion.x ^ event.motion.y));
+    event.motion.x;
     break;
   }
   case SDL_MOUSEBUTTONDOWN: {
@@ -294,7 +296,7 @@ static SDL_Texture *surface_to_texture(SDL_Surface *surface,
 static void render_buttons(void) {
   for (int i = 0; i < MAX_BUTTON_COUNT; i++) {
     if (&app.buttons[i] != NULL && app.buttons[i].is_drawn == true) {
-      SDL_SetRenderDrawColor(main_renderer, 255, 125, 0, 255);
+      SDL_SetRenderDrawColor(main_renderer, 55, 125, 0, 255);
       SDL_RenderFillRect(main_renderer, &app.buttons[i].rectangle);
     }
   }

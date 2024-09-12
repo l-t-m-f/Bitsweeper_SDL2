@@ -35,10 +35,10 @@ void interface_init(void) {
 
   app.buttons[0] = (Button){.rectangle =
                                 (SDL_Rect){
-                                    .x = WINDOW_W / 2,
-                                    .y = 400,
-                                    .w = 200,
-                                    .h = 50,
+                                    .x = WINDOW_W / 2 - 270,
+                                    .y = 660,
+                                    .w = 540,
+                                    .h = 90,
                                 },
                             .button_state = ALONE,
                             .is_drawn = true};
