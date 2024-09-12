@@ -216,7 +216,16 @@ static void handle_events(SDL_Event event) {
 
   switch (event.type) {
   case SDL_MOUSEMOTION: {
-    event.motion.x;
+    if ((event.motion.x > app.buttons[0].rectangle.x &&
+         event.motion.x <
+             app.buttons[0].rectangle.x + app.buttons[0].rectangle.w) &&
+        (event.motion.y > app.buttons[0].rectangle.y &&
+         event.motion.y <
+             app.buttons[0].rectangle.y + app.buttons[0].rectangle.h)) {
+      app.buttons[0].button_state = HOVERED;
+    } else {
+      app.buttons[0].button_state = ALONE;
+    }
     break;
   }
   case SDL_MOUSEBUTTONDOWN: {
@@ -296,7 +305,13 @@ static SDL_Texture *surface_to_texture(SDL_Surface *surface,
 static void render_buttons(void) {
   for (int i = 0; i < MAX_BUTTON_COUNT; i++) {
     if (&app.buttons[i] != NULL && app.buttons[i].is_drawn == true) {
-      SDL_SetRenderDrawColor(main_renderer, 55, 125, 0, 255);
+      if(app.buttons[i].button_state == ALONE) {
+        SDL_SetRenderDrawColor(main_renderer, 55, 125, 0, 255);
+      }
+      else
+      {
+        SDL_SetRenderDrawColor(main_renderer, 200, 125, 0, 255);
+      }
       SDL_RenderFillRect(main_renderer, &app.buttons[i].rectangle);
     }
   }
