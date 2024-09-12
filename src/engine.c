@@ -221,6 +221,18 @@ static void handle_events(SDL_Event event) {
     game_process_mouse_click(&event.button);
     break;
   }
+  case SDL_KEYDOWN: {
+    switch (event.key.keysym.sym) {
+    case SDLK_ESCAPE: {
+      SDL_Quit();
+      exit(0);
+      break;
+    }
+    default: {
+      break;
+    }
+    }
+  }
   default: {
     // printf("Unhandled event! (%u)\n", event.type);
     break;
